@@ -53,7 +53,7 @@ export default class Home extends React.PureComponent {
       // on top-most row
       selectedGame = Math.min(
         this.state.numGames - 1,
-        this.state.numGames - (gamesPerRow - 1) + this.state.selectedGame,
+        this.state.numGames - this.state.numGames % 4 + this.state.selectedGame,
       );
     }
 
