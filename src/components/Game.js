@@ -15,13 +15,14 @@ const GameContainerBackground = styled.div`
   margin: 1.5vw;
   background-color: ${props => (props.selected ? blue[500] : 'transparent')};
   border-radius: 0.5vw;
-  transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-out, transform 0.2s ease-out;
+  transform: ${props => (props.selected ? 'scale(1.2)' : '')};
 `;
 
 const GameContainer = styled.div`
   position: relative;
   background-color: white;
-  box-shadow: 0 1vw 2vw rgba(0, 0, 0, 0.16), 0 1vw 2vw rgba(0, 0, 0, 0.23);
+  box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.16), 0 0.5vw 1vw rgba(0, 0, 0, 0.23);
   border-radius: 0.5vw;
   width: 20vw;
   height: 15vw;
