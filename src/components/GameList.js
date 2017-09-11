@@ -16,8 +16,8 @@ const Container = styled.div`
 `;
 
 const GameSelect = styled.div`
-  padding-top: 100vh;
-  padding-bottom: 100vh;
+  padding-top: 50vh;
+  padding-bottom: 50vh;
   background-color: ${blueGrey[50]};
   display: flex;
   align-items: center;
