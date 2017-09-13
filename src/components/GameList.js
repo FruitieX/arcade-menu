@@ -28,10 +28,13 @@ const gamesPerRow = 4;
 export default class Home extends React.PureComponent {
   gameRefs = [];
 
-  state = {
-    selectedGame: 0,
-    numGames: 14,
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedGame: 0,
+      numGames: props.games.length,
+    };
+  }
 
   scrollToGame = index => {
     const node = ReactDOM.findDOMNode(this.gameRefs[index]);

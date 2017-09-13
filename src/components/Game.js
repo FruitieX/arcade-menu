@@ -1,14 +1,16 @@
 import React from 'react';
 
 import styled from 'styled-components';
-import { blue } from 'material-ui/colors';
+import { blue, grey } from 'material-ui/colors';
 
-const Thumb = styled.img`
+const Thumb = styled.img.attrs({
+  src: props => props.image,
+})`
   width: 20vw;
   height: 15vw;
-  background-image: url(${props => props.image});
-  background-size: cover;
   border-radius: 0.5vw;
+  object-fit: cover;
+  object-position: 0 0;
 `;
 
 const GameContainerBackground = styled.div`
@@ -21,7 +23,7 @@ const GameContainerBackground = styled.div`
 
 const GameContainer = styled.div`
   position: relative;
-  background-color: white;
+  background-color: ${grey[100]};
   box-shadow: 0 0.5vw 1vw rgba(0, 0, 0, 0.16), 0 0.5vw 1vw rgba(0, 0, 0, 0.23);
   border-radius: 0.5vw;
   width: 20vw;
@@ -35,6 +37,9 @@ const Title = styled.div`
   text-overflow: ellipsis;
   position: absolute;
   bottom: 0;
+  width: 100%;
+  height: 5vw;
+  font-weight: bold;
   font-size: 2vw;
   text-align: center;
   font-family: Roboto Condensed;

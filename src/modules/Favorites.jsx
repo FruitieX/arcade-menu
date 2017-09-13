@@ -5,16 +5,25 @@ import Mousetrap from 'mousetrap';
 
 import GameList from '../components/GameList';
 
-const sampleBoxArt =
-  'http://vignette2.wikia.nocookie.net/mario/images/8/8c/Super_Mario_World_2_-_North_American_Boxart.png';
+import fs from 'fs';
 
-const numGames = 14;
+const gamesDb = JSON.parse(
+  fs.readFileSync('/home/rasse/src/igdb-scraper/nes_games.json', {
+    encoding: 'utf-8',
+  }),
+);
 
 export default class Home extends React.PureComponent {
-  games = [...Array(numGames)].map(() => ({
-    image: sampleBoxArt,
-    title: "Super Mario World 2: Yoshi's Island",
-  }));
+  games = gamesDb
+    .sort((a, b) => a.item.name.localeCompare(b.item.name))
+    .map(game => {
+      return {
+        image: `file:///home/rasse/src/igdb-scraper/covers/${game.filename}.jpg`,
+        title: game.item.name,
+        filename: game.filename,
+      };
+    })
+    //.slice(0, 500);
 
   inputEmitter = new EventEmitter();
 

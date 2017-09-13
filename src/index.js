@@ -15,8 +15,6 @@ import { IntlProvider } from 'react-intl-redux';
 import './index.css';
 
 import ErrorSnackbar from './modules/ErrorSnackbar';
-import NavigationDrawer from './modules/NavigationDrawer';
-import Header from './modules/Header';
 import FullscreenSpinner from './components/FullscreenSpinner';
 
 import routeConfigs, { IndexRoute, ConfiguredRoutes } from './utils/routes';
@@ -78,8 +76,8 @@ export default class App extends React.Component {
 
   renderApp = () => (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header />
-      <NavigationDrawer />
+      {/* <Header /> */}
+      {/* <NavigationDrawer /> */}
       <IndexRoute routeConfig={routeConfigs[0]} />
       <ConfiguredRoutes />
 
