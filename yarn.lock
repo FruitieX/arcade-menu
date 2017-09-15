@@ -5765,6 +5765,12 @@ rc@^1.0.1, rc@^1.1.2, rc@^1.1.6, rc@^1.1.7:
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
 
+react-animation-frame@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/react-animation-frame/-/react-animation-frame-0.2.1.tgz#6b43eda33d99b0f23b580f91c118afdfd0487d39"
+  dependencies:
+    react "15.4.2"
+
 react-dev-utils@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/react-dev-utils/-/react-dev-utils-4.0.1.tgz#106ae3d29f811c169d459bb9215a5933b7e11fb6"
@@ -5961,6 +5967,14 @@ react-virtualized@^9.9.0:
     dom-helpers "^2.4.0 || ^3.0.0"
     loose-envify "^1.3.0"
     prop-types "^15.5.4"
+
+react@15.4.2:
+  version "15.4.2"
+  resolved "https://registry.yarnpkg.com/react/-/react-15.4.2.tgz#41f7991b26185392ba9bae96c8889e7e018397ef"
+  dependencies:
+    fbjs "^0.8.4"
+    loose-envify "^1.1.0"
+    object-assign "^4.1.0"
 
 "react@^15 || ^16", react@^15.5.4, react@^15.6.1:
   version "15.6.1"

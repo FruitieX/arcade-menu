@@ -22,8 +22,12 @@ import routeConfigs, { IndexRoute, ConfiguredRoutes } from './utils/routes';
 import store from './utils/store';
 import persistStore from './utils/persist';
 
+import { initInput } from './utils/input';
+
 import { history } from './utils/middleware/router';
 import theme from './utils/theme';
+
+initInput();
 
 const muiTheme = createMuiTheme(theme);
 
@@ -75,7 +79,7 @@ export default class App extends React.Component {
   }
 
   renderApp = () => (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div>
       {/* <Header /> */}
       {/* <NavigationDrawer /> */}
       <IndexRoute routeConfig={routeConfigs[0]} />

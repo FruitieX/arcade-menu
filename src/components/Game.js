@@ -14,11 +14,12 @@ const Thumb = styled.img.attrs({
 `;
 
 const GameContainerBackground = styled.div`
-  margin: 1.5vw;
+  padding: 0.5vw;
+  margin: 1vw;
   background-color: ${props => (props.selected ? blue[500] : 'transparent')};
   border-radius: 0.5vw;
   transition: background-color 0.2s ease-out, transform 0.2s ease-out;
-  transform: ${props => (props.selected ? 'scale(1.2)' : '')};
+  transform: ${props => (props.selected ? 'scale(1.1)' : '')};
 `;
 
 const GameContainer = styled.div`
