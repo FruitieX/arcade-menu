@@ -1,44 +1,49 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 //import 'react-virtualized/styles.css';
 
 import Grid from 'react-virtualized/dist/commonjs/Grid';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
 import WindowScroller from 'react-virtualized/dist/commonjs/WindowScroller';
 import ReactAnimationFrame from 'react-animation-frame';
-//import Card, { CardContent, CardActions, CardMedia } from 'material-ui/Card';
-
-import { blueGrey } from 'material-ui/colors';
-import Velocity from 'velocity-animate';
-
-import styled from 'styled-components';
 
 import input from '../utils/input';
 import Game from '../components/Game';
 
-const Container = styled.div`
-  background-color: ${blueGrey[50]};
-  width: 100vw;
-`;
-
-const GameSelect = styled.div`
-  padding-top: 50vh;
-  padding-bottom: 50vh;
-  background-color: ${blueGrey[50]};
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-`;
+import { getGames } from '../utils/library';
 
 const gamesPerRow = 4;
 export class GameList extends React.PureComponent {
   constructor(props) {
     super(props);
+
     this.state = {
+      games: [],
       selectedGame: 0,
-      numGames: props.games.length,
+      numGames: 0,
     };
   }
+
+  componentDidMount = async () => {
+    input.on('up', this.handleUp);
+    input.on('down', this.handleDown);
+    input.on('left', this.handleLeft);
+    input.on('right', this.handleRight);
+    input.on('select', this.handleSelect);
+
+    this.scrollToGame(this.state.selectedGame);
+    //window.onwheel = () => false;
+
+    const games = await getGames();
+    this.setState({ games, numGames: games.length });
+  };
+
+  componentWillUnmount = () => {
+    input.off('up', this.handleUp);
+    input.off('down', this.handleDown);
+    input.off('left', this.handleLeft);
+    input.off('right', this.handleRight);
+    input.off('select', this.handleSelect);
+  };
 
   onAnimationFrame = (time, oldTime) => {
     const dt = time - oldTime;
@@ -101,7 +106,7 @@ export class GameList extends React.PureComponent {
     const numRows = Math.ceil(this.state.numGames / gamesPerRow);
     const curRow = Math.floor(this.state.selectedGame / gamesPerRow);
 
-    if (curRow < numRows - 1) {
+    if (curRow < numRows) {
       selectedGame = Math.min(
         this.state.numGames - 1,
         this.state.selectedGame + gamesPerRow,
@@ -152,31 +157,12 @@ export class GameList extends React.PureComponent {
   };
 
   handleSelect = () => {
-    this.props.onSelectGame(this.props.games[this.state.selectedGame]);
+    this.props.onSelectGame(this.state.games[this.state.selectedGame]);
   };
 
-  componentDidMount = () => {
-    input.on('up', this.handleUp);
-    input.on('down', this.handleDown);
-    input.on('left', this.handleLeft);
-    input.on('right', this.handleRight);
-    input.on('select', this.handleSelect);
-
-    this.scrollToGame(this.state.selectedGame);
-    //window.onwheel = () => false;
-  };
-
-  componentWillUnmount = () => {
-    input.off('up', this.handleUp);
-    input.off('down', this.handleDown);
-    input.off('left', this.handleLeft);
-    input.off('right', this.handleRight);
-    input.off('select', this.handleSelect);
-  };
-
-  renderGame = ({ columnIndex, key, rowIndex, style }) => {
+  renderGame = ({ columnIndex, key, rowIndex, style, isScrolling }) => {
     const index = gamesPerRow * rowIndex + columnIndex;
-    const game = this.props.games[index];
+    const game = this.state.games[index];
 
     if (!game) return null;
 
@@ -184,17 +170,16 @@ export class GameList extends React.PureComponent {
       <div key={key} style={style}>
         <Game
           selected={this.state.selectedGame === index}
-          image={game.image}
-          title={game.title}
+          {...game}
+          isScrolling={isScrolling}
+          image={`file:///home/rasse/roms/nes/images/${game.filename}.png`}
         />
       </div>
     );
   };
 
-  saveGridRef = ref => (this.grid = ref);
-
   render = () => (
-    <div style={{ flex: '1 1 auto' }}>
+    <div style={{ flex: '1 1 auto', transform: 'rotateZ(360deg)' }}>
       <WindowScroller>
         {({ height, isScrolling, onChildScroll, scrollTop }) => (
           <AutoSizer disableHeight>
@@ -202,18 +187,17 @@ export class GameList extends React.PureComponent {
               <Grid
                 style={{ marginTop: '50vh', marginBottom: '50vh' }}
                 autoHeight
-                ref={this.saveGridRef}
                 width={width}
                 height={height}
                 cellRenderer={this.renderGame}
                 columnCount={gamesPerRow}
                 columnWidth={width / gamesPerRow}
-                rowCount={Math.ceil(this.props.games.length / gamesPerRow)}
+                rowCount={Math.ceil(this.state.games.length / gamesPerRow)}
                 rowHeight={width / 5}
                 overscanRowCount={2}
-                selected={this.state.selectedGame}
+                selectedGame={this.state.selectedGame}
                 scrollTop={scrollTop}
-                //isScrolling={isScrolling} // TODO: this optimisation breaks updating active game cursor
+                // isScrolling={isScrolling} // TODO: this optimisation breaks updating active game cursor
                 onScroll={onChildScroll}
               />
             )}
