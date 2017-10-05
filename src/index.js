@@ -27,6 +27,9 @@ import { initInput } from './utils/input';
 import { history } from './utils/middleware/router';
 import theme from './utils/theme';
 
+const { webFrame } = require('electron');
+webFrame.registerURLSchemeAsPrivileged('file');
+
 initInput();
 
 const muiTheme = createMuiTheme(theme);

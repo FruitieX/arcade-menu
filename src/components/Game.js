@@ -63,30 +63,19 @@ export default class Game extends React.PureComponent {
     };
   }
 
-  componentDidMount = () => {
-    const blob = new Blob(
-      [
-        `self.onmessage = e => {
-  function reqListener () {
-    createImageBitmap(this.response)
-    .then(imageBitmap => {
-      postMessage({ imageBitmap }, [ imageBitmap ]);
-      close();
-    });
-  }
-
-  const xhr = new XMLHttpRequest();
-  xhr.responseType = 'blob';
-  xhr.addEventListener("load", reqListener);
-  xhr.open("GET", e.data);
-  xhr.send();
-};`,
-      ],
-      { type: 'application/javascript' },
+  onMessage = e => {
+    const ctx = ReactDOM.findDOMNode(this.ref).getContext('2d');
+    ctx.drawImage(
+      e.data.imageBitmap,
+      0,
+      0,
+      ctx.canvas.width,
+      ctx.canvas.height,
     );
-
-    this.worker = new Worker(URL.createObjectURL(blob));
-    this.worker.onmessage = e => {
+    this.setState({ imgOpacity: 1 });
+    /*
+    if (e.data.filename === this.props.image) {
+      console.log('got response', e);
       //console.log('Response: ', e.data, typeof e.data);
       const ctx = ReactDOM.findDOMNode(this.ref).getContext('2d');
       ctx.drawImage(
@@ -97,11 +86,56 @@ export default class Game extends React.PureComponent {
         ctx.canvas.height,
       );
       this.setState({ imgOpacity: 1 });
-    };
+    }
+    */
+  };
+  componentDidMount = async () => {
+    this.worker = new SharedWorker('/imageDecoder.js');
+    this.worker.port.onmessage = this.onMessage;
 
+    fetch(this.props.image)
+      .then(response => response.arrayBuffer())
+      .then(buffer => this.worker.port.postMessage({ buffer }, [buffer]));
+
+    // THIS SHIT WORKS
+    /*
+      .then(buffer => {
+        const blob = new Blob([buffer]);
+
+        console.log(blob);
+
+        createImageBitmap(blob).then(imageBitmap => console.log(imageBitmap));
+      });
+      */
+    /*
+      .then(blob => createImageBitmap(blob))
+      .then(imageBitmap => port.postMessage({ imageBitmap }, [imageBitmap]))
+      .catch(e => port.postMessage('error' + e));
+      */
+
+    //console.log('postMessage', this.props.image);
+    //this.worker.port.postMessage(this.props.image);
+
+    /*
+    const xhr = new XMLHttpRequest();
+    xhr.responseType = 'blob';
+    xhr.addEventListener('load', reqListener);
+    xhr.addEventListener('onerror', errListener);
+    xhr.open('GET', e.data);
+    xhr.send();
+    */
+
+    /*
+    fetch(this.props.image)
+      .then(response => response.arrayBuffer())
+      .then(buffer => this.worker.port.postMessage({ buffer }, [buffer]));
+      */
+
+    /*
     this.loadTimeout = setTimeout(() => {
-      this.worker.postMessage(this.props.image);
-    }, 100);
+      imageDecoder.port.postMessage(this.props.image);
+    }, 0);
+    */
 
     // this.image = new Image();
     // this.image.onload = () => {
@@ -125,8 +159,9 @@ export default class Game extends React.PureComponent {
 
   componentWillUnmount = () => {
     // this.image.onload = null;
-    this.worker.onmessage = null;
-    clearTimeout(this.loadTimeout);
+    //clearTimeout(this.loadTimeout);
+    //imageDecoder.removeListener('message', this.onMessage);
+    this.worker.port.onmessage = null;
   };
 
   componentWillReceiveProps = nextProps => {
