@@ -172,14 +172,15 @@ export class GameList extends React.PureComponent {
           selected={this.state.selectedGame === index}
           {...game}
           isScrolling={isScrolling}
-          image={`file:///home/rasse/roms/nes/images/${game.filename}.png`}
+          // image={`file:///home/rasse/roms/nes/images/${game.filename}.png`}
+          image={`/home/rasse/roms/nes/images/${game.filename}.jpg`}
         />
       </div>
     );
   };
 
   render = () => (
-    <div style={{ flex: '1 1 auto', transform: 'rotateZ(360deg)' }}>
+    <div style={{ flex: '1 1 auto' }}>
       <WindowScroller>
         {({ height, isScrolling, onChildScroll, scrollTop }) => (
           <AutoSizer disableHeight>
@@ -194,7 +195,7 @@ export class GameList extends React.PureComponent {
                 columnWidth={width / gamesPerRow}
                 rowCount={Math.ceil(this.state.games.length / gamesPerRow)}
                 rowHeight={width / 5}
-                overscanRowCount={2}
+                overscanRowCount={5}
                 selectedGame={this.state.selectedGame}
                 scrollTop={scrollTop}
                 // isScrolling={isScrolling} // TODO: this optimisation breaks updating active game cursor

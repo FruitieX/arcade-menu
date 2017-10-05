@@ -47,6 +47,7 @@ const fuseOptions = {
   ],
 };
 
+// TODO: convert images to JPEG, much faster loading
 const downloadImage = async (url, filepath) =>
   axios
     .get(url, {

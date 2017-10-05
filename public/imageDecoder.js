@@ -14,16 +14,34 @@ export default URL.createObjectURL(
 //const webFrame = require('electron').webFrame;
 //webFrame.registerURLSchemeAsPrivileged('file');
 
+const fs = require('fs');
+
 onconnect = e => {
   const port = e.ports[0];
+  let active = true;
   //console.log('got connection from port', port);
   port.onmessage = e => {
-    //console.log('worker got', e.data);
-    const blob = new Blob([e.data.buffer]);
+    if (e.data === 'cancel') {
+      active = false;
+      return;
+    }
 
-    createImageBitmap(blob).then(imageBitmap =>
-      port.postMessage({ imageBitmap }, [imageBitmap]),
-    );
+    if (!active) return;
+
+    fs.readFile(e.data, (err, data) => {
+      if (!active) return;
+      createImageBitmap(new Blob([data])).then(imageBitmap => {
+        if (!active) return;
+        port.postMessage({ imageBitmap }, [imageBitmap]);
+      });
+      //port.postMessage('error: ' + err + ', data: ' + data);
+    });
+    //console.log('worker got', e.data);
+    //const blob = new Blob([e.data.buffer]);
+
+    // createImageBitmap(blob).then(imageBitmap =>
+    //   port.postMessage({ imageBitmap }, [imageBitmap]),
+    // );
     /*
     fetch(e.data)
       .then(e => port.postMessage('there'))
