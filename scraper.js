@@ -5,6 +5,7 @@ import path from 'path';
 import changeCase from 'change-case';
 import Fuse from 'fuse.js';
 import knex from './src/utils/library';
+import sharp from 'sharp';
 
 const rootUrl = 'http://thegamesdb.net/api';
 const bannerUrl = 'http://thegamesdb.net/banners';
@@ -47,13 +48,16 @@ const fuseOptions = {
   ],
 };
 
-// TODO: convert images to JPEG, much faster loading
 const downloadImage = async (url, filepath) =>
-  axios
-    .get(url, {
-      responseType: 'stream',
-    })
-    .then(res => res.data.pipe(fs.createWriteStream(filepath)));
+  axios.get(url, { responseType: 'arraybuffer' }).then(res =>
+    sharp(res.data)
+      .resize(400, 300)
+      .crop(sharp.gravity.north)
+      .jpeg()
+      .toFile(filepath),
+  );
+
+//res.data.pipe(converter).pipe(fs.createWriteStream(filepath)));
 
 const arrayify = (obj, tagName, childTag) => {
   if (childTag) {
@@ -190,19 +194,19 @@ const createPlatform = async (platformName, dir) => {
   if (platformDetails.images.boxart) {
     await downloadImage(
       `${bannerUrl}/${platformDetails.images.boxart}`,
-      `${dir}/images/boxart.png`,
+      `${dir}/images/boxart.jpg`,
     );
   }
   if (platformDetails.images.consoleart) {
     await downloadImage(
       `${bannerUrl}/${platformDetails.images.consoleart}`,
-      `${dir}/images/consoleart.png`,
+      `${dir}/images/consoleart.jpg`,
     );
   }
   if (platformDetails.images.controllerart) {
     await downloadImage(
       `${bannerUrl}/${platformDetails.images.controllerart}`,
-      `${dir}/images/controllerart.png`,
+      `${dir}/images/controllerart.jpg`,
     );
   }
 
@@ -218,8 +222,11 @@ const createGame = async (game, platformName, dir) => {
     platform = await createPlatform(platformName, dir);
   }
 
-  console.log(`Inserting game ${game.gameTitle} into DB...`);
-  await knex('games').insert({
+  const dbGame = await knex('games')
+    .first()
+    .where({ filename: game.filename, platformId: platform.id });
+
+  const fields = {
     name: game.gameTitle,
     platformId: platform.id,
     filename: game.filename,
@@ -231,13 +238,25 @@ const createGame = async (game, platformName, dir) => {
     developer: game.developer,
     publisher: game.publisher,
     rating: game.rating,
-  });
 
-  if (!fs.existsSync(path.join(dir, 'images', `${game.filename}.png`))) {
+    scraper_confidence: game.scraperConfidence,
+  };
+
+  if (!dbGame) {
+    console.log(`Inserting game ${game.filename} into DB...`);
+    await knex('games').insert(fields);
+  } else {
+    console.log(`Updating game ${game.filename} in DB...`);
+    await knex('games')
+      .where({ filename: game.filename, platformId: platform.id })
+      .update(fields);
+  }
+
+  if (!fs.existsSync(path.join(dir, 'images', `${game.filename}.jpg`))) {
     console.log(`Downloading boxart for ${game.gameTitle}...`);
     await downloadImage(
       `${bannerUrl}/${game.images.boxart[0]}`,
-      `${dir}/images/${game.filename}.png`,
+      `${dir}/images/${game.filename}.jpg`,
     );
   } else {
     console.log(
