@@ -11,7 +11,7 @@ const knex = Knex(config.db.development);
 export default knex;
 
 export const getGames = (
-  { offset = 0, limit = 1000, orderBy = 'filename', desc = false } = {},
+  { offset = 0, limit = 10000, orderBy = 'filename', desc = false } = {},
 ) =>
   knex('games')
     .where({ platformId: 1 })
