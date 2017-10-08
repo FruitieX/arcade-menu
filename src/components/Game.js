@@ -47,10 +47,6 @@ const Title = styled.div`
 `;
 
 export default class Game extends React.PureComponent {
-  constructor(props) {
-    super(props);
-  }
-
   onMessage = e => {
     const ctx = ReactDOM.findDOMNode(this.ref).getContext('2d');
     ctx.drawImage(
