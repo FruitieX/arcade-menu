@@ -6,7 +6,8 @@ const gamepads = {};
 const inputEmitter = new EventEmitter();
 export default inputEmitter;
 
-const emitEvent = event => () => inputEmitter.emit(event);
+const emitButton = (button, pressed) =>
+  inputEmitter.emit(button, { button, pressed });
 
 const pollGamepad = gamepad => {
   //console.log(gamepad.prevButtonState[0], gamepad.device.buttons[0]);
@@ -25,24 +26,54 @@ const pollGamepads = () => {
 };
 
 export const initInput = () => {
-  window.addEventListener(
-    'keydown',
-    function(e) {
-      // space and arrow keys
-      if ([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-        e.preventDefault();
-      }
-    },
-    false,
-  );
-
   window.onwheel = () => false;
+  window.addEventListener('keydown', event => {
+    if (event.repeat) {
+      // Ignore auto-repeat presses
+      return event.preventDefault();
+    }
 
-  Mousetrap.bind('up', emitEvent('up'));
-  Mousetrap.bind('down', emitEvent('down'));
-  Mousetrap.bind('left', emitEvent('left'));
-  Mousetrap.bind('right', emitEvent('right'));
-  Mousetrap.bind('return', emitEvent('select'));
+    console.log('Keyboard keydown:', event.key);
+
+    if (event.key === 'ArrowUp') {
+      emitButton('up', true);
+    } else if (event.key === 'ArrowDown') {
+      emitButton('down', true);
+    } else if (event.key === 'ArrowLeft') {
+      emitButton('left', true);
+    } else if (event.key === 'ArrowRight') {
+      emitButton('right', true);
+    } else if (event.key === 'Enter') {
+      emitButton('select', true);
+    } else if (event.key === 'Escape') {
+      emitButton('back', true);
+    } else if (event.key === 'Control') {
+      emitButton('letterscroll', true);
+    } else {
+      event.preventDefault();
+    }
+  });
+  window.addEventListener('keyup', event => {
+    console.log('Keyboard keyup:', event.key);
+
+    if (event.key === 'ArrowUp') {
+      emitButton('up', false);
+    } else if (event.key === 'ArrowDown') {
+      emitButton('down', false);
+    } else if (event.key === 'ArrowLeft') {
+      emitButton('left', false);
+    } else if (event.key === 'ArrowRight') {
+      emitButton('right', false);
+    } else if (event.key === 'Enter') {
+      emitButton('select', false);
+    } else if (event.key === 'Escape') {
+      emitButton('back', false);
+    } else if (event.key === 'Control') {
+      emitButton('letterscroll', false);
+    } else {
+      event.preventDefault();
+    }
+  });
 
   const gamepadHandler = (event, connecting) => {
     var gamepad = event.gamepad;

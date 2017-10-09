@@ -67,6 +67,7 @@
     "redux-persist": "^4.9.1",
     "redux-persist-transform-filter": "^0.0.15",
     "redux-thunk": "^2.2.0",
+    "reselect": "^3.0.1",
     "sharp": "^0.18.4",
     "style-loader": "0.18.2",
     "styled-components": "^2.1.2",
