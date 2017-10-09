@@ -40,12 +40,16 @@ export class GameList extends React.PureComponent {
     };
   }
 
+  scrollContainerNode = {};
+  letterScroll = false;
+
   componentDidMount = async () => {
     input.on('up', this.handleUp);
     input.on('down', this.handleDown);
     input.on('left', this.handleLeft);
     input.on('right', this.handleRight);
     input.on('select', this.handleSelect);
+    input.on('letterscroll', this.handleLetterScroll);
 
     const games = await getGames();
     this.setState({ games, numGames: games.length });
@@ -57,33 +61,58 @@ export class GameList extends React.PureComponent {
     input.off('left', this.handleLeft);
     input.off('right', this.handleRight);
     input.off('select', this.handleSelect);
+    input.off('letterscroll', this.handleLetterScroll);
+  };
+
+  scrollToOffset = offset => {
+    if (this.scrollContainerNode) {
+      // Instantly jump over large distances (larger than window height)
+      // if (Math.abs(wishOffset - currentPos) > window.innerHeight) {
+      //   offset = wishOffset;
+      // }
+
+      this.scrollContainerNode.scroll(0, offset);
+    }
+  };
+
+  getScrollOffset = gameIndex => {
+    let wishOffset =
+      Math.floor(gameIndex / gamesPerRow) * (window.innerWidth / 5);
+
+    wishOffset -= window.innerHeight / 2;
+    wishOffset += window.innerWidth / 5 / 2;
+
+    return wishOffset;
   };
 
   onAnimationFrame = (time, oldTime) => {
     const dt = time - oldTime;
 
-    let wishOffset =
-      Math.floor(this.state.selectedGame / gamesPerRow) *
-      (window.innerWidth / 5);
+    const wishOffset = this.getScrollOffset(this.state.selectedGame);
 
-    wishOffset -= window.innerHeight / 2;
-    wishOffset += window.innerWidth / 5 / 2;
+    const currentPos = this.scrollContainerNode.scrollTop;
+    const weight = Math.pow(0.99, dt);
+    let offset = weight * currentPos + (1 - weight) * wishOffset;
 
-    //wishOffset += window.innerHeight / 2;
-
-    if (this.scrollContainerNode) {
-      const weight = Math.pow(0.99, dt);
-      const offset =
-        weight * this.scrollContainerNode.scrollTop + (1 - weight) * wishOffset;
-
-      ReactDOM.findDOMNode(this.ref).scroll(0, offset);
-      //this.scrollContainerNode.scroll(0, offset);
-    }
-
-    //window.scroll(0, offset);
+    this.scrollToOffset(offset);
   };
 
-  handleUp = () => {
+  selectGame = selectedGame => this.setState({ selectedGame });
+
+  handleLetterScroll = event => {
+    this.letterScroll = event.pressed;
+  };
+
+  handleUp = event => {
+    if (!event.pressed) {
+      // Ignore keyup events
+      return;
+    }
+    if (this.letterScroll) {
+      // Don't scroll if letter scroll active
+      return;
+    }
+
     let selectedGame = this.state.selectedGame;
     if (this.state.selectedGame > gamesPerRow - 1) {
       selectedGame = this.state.selectedGame - gamesPerRow;
@@ -92,13 +121,26 @@ export class GameList extends React.PureComponent {
       selectedGame = Math.min(
         this.state.numGames - 1,
         this.state.selectedGame +
-          (this.state.numGames - (this.state.numGames % 4 || 4)),
+          (this.state.numGames -
+            (this.state.numGames % gamesPerRow || gamesPerRow)),
       );
+
+      // Instant scroll to new position
+      this.scrollToOffset(this.getScrollOffset(selectedGame));
     }
 
-    this.setState({ selectedGame });
+    this.selectGame(selectedGame);
   };
-  handleDown = () => {
+  handleDown = event => {
+    if (!event.pressed) {
+      // Ignore keyup events
+      return;
+    }
+    if (this.letterScroll) {
+      // Don't scroll if letter scroll active
+      return;
+    }
+
     let selectedGame = this.state.selectedGame;
 
     const numRows = Math.ceil(this.state.numGames / gamesPerRow);
@@ -112,13 +154,22 @@ export class GameList extends React.PureComponent {
     } else {
       // on bottom row
       selectedGame =
-        (this.state.selectedGame + (this.state.numGames % 4 || 4)) %
+        (this.state.selectedGame +
+          (this.state.numGames % gamesPerRow || gamesPerRow)) %
         this.state.numGames;
+
+      // Instant scroll to new position
+      this.scrollToOffset(this.getScrollOffset(selectedGame));
     }
 
-    this.setState({ selectedGame });
+    this.selectGame(selectedGame);
   };
-  handleLeft = () => {
+  handleLeft = event => {
+    if (!event.pressed) {
+      // Ignore keyup events
+      return;
+    }
+
     let selectedGame = this.state.selectedGame;
 
     if (this.state.selectedGame % gamesPerRow === 0) {
@@ -130,9 +181,14 @@ export class GameList extends React.PureComponent {
       selectedGame = Math.max(0, this.state.selectedGame - 1);
     }
 
-    this.setState({ selectedGame });
+    this.selectGame(selectedGame);
   };
-  handleRight = () => {
+  handleRight = event => {
+    if (!event.pressed) {
+      // Ignore keyup events
+      return;
+    }
+
     let selectedGame = this.state.selectedGame;
 
     if ((this.state.selectedGame + 1) % gamesPerRow === 0) {
@@ -148,7 +204,7 @@ export class GameList extends React.PureComponent {
       );
     }
 
-    this.setState({ selectedGame });
+    this.selectGame(selectedGame);
   };
 
   handleSelect = () => {
@@ -209,6 +265,7 @@ export class GameList extends React.PureComponent {
         <FastScroll
           games={this.state.games}
           selectedGame={this.state.selectedGame}
+          selectGame={this.selectGame}
         />
       )}
     </div>
