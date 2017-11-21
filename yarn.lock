@@ -3142,6 +3142,10 @@ flexibility@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/flexibility/-/flexibility-2.0.1.tgz#ad323aafc40f469ce624286518fc4d7cd72b7c77"
 
+flow-bin@^0.56.0:
+  version "0.56.0"
+  resolved "https://registry.yarnpkg.com/flow-bin/-/flow-bin-0.56.0.tgz#ce43092203a344ba9bf63c0cabe95d95145f6cad"
+
 follow-redirects@^1.2.3:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.2.4.tgz#355e8f4d16876b43f577b0d5ce2668b9723214ea"
@@ -5187,10 +5191,6 @@ mkdirp@0.5.1, mkdirp@0.5.x, "mkdirp@>=0.5 0", mkdirp@^0.5.0, mkdirp@^0.5.1, mkdi
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
-
-mousetrap@^1.6.1:
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/mousetrap/-/mousetrap-1.6.1.tgz#2a085f5c751294c75e7e81f6ec2545b29cbf42d9"
 
 ms@0.7.1:
   version "0.7.1"

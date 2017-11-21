@@ -1,17 +1,16 @@
+// @flow
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 //import 'react-virtualized/styles.css';
 
 import Grid from 'react-virtualized/dist/commonjs/Grid';
 import AutoSizer from 'react-virtualized/dist/commonjs/AutoSizer';
-import WindowScroller from 'react-virtualized/dist/commonjs/WindowScroller';
 import ReactAnimationFrame from 'react-animation-frame';
 
-import input from '../utils/input';
-import Game from '../components/Game';
+import input, { ButtonEvent } from '../utils/input';
+import GameThumbnail from '../components/Game';
 import FastScroll from '../components/FastScroll';
-
-import { getGames } from '../utils/library';
 
 /**
  * Calculates the number of cells to overscan before and after a specified range.
@@ -29,30 +28,40 @@ const OverscanIndicesGetter = ({
 });
 
 const gamesPerRow = 4;
-export class GameList extends React.PureComponent {
+
+type Game = {
+  filename: String,
+  name: String,
+};
+
+type Props = {
+  games: Array<Game>,
+  onSelectGame: Function,
+};
+
+type State = {
+  selectedGame: number,
+};
+
+export class GameList extends React.PureComponent<Props, State> {
   constructor(props) {
     super(props);
 
     this.state = {
-      games: [],
       selectedGame: 0,
-      numGames: 0,
     };
   }
 
   scrollContainerNode = {};
   letterScroll = false;
 
-  componentDidMount = async () => {
+  componentDidMount = () => {
     input.on('up', this.handleUp);
     input.on('down', this.handleDown);
     input.on('left', this.handleLeft);
     input.on('right', this.handleRight);
     input.on('select', this.handleSelect);
     input.on('letterscroll', this.handleLetterScroll);
-
-    const games = await getGames();
-    this.setState({ games, numGames: games.length });
   };
 
   componentWillUnmount = () => {
@@ -103,7 +112,7 @@ export class GameList extends React.PureComponent {
     this.letterScroll = event.pressed;
   };
 
-  handleUp = event => {
+  handleUp = (event: ButtonEvent) => {
     if (!event.pressed) {
       // Ignore keyup events
       return;
@@ -119,10 +128,10 @@ export class GameList extends React.PureComponent {
     } else {
       // on top-most row
       selectedGame = Math.min(
-        this.state.numGames - 1,
+        this.props.games.length - 1,
         this.state.selectedGame +
-          (this.state.numGames -
-            (this.state.numGames % gamesPerRow || gamesPerRow)),
+          (this.props.games.length -
+            (this.props.games.length % gamesPerRow || gamesPerRow)),
       );
 
       // Instant scroll to new position
@@ -131,7 +140,7 @@ export class GameList extends React.PureComponent {
 
     this.selectGame(selectedGame);
   };
-  handleDown = event => {
+  handleDown = (event: ButtonEvent) => {
     if (!event.pressed) {
       // Ignore keyup events
       return;
@@ -143,20 +152,20 @@ export class GameList extends React.PureComponent {
 
     let selectedGame = this.state.selectedGame;
 
-    const numRows = Math.ceil(this.state.numGames / gamesPerRow);
+    const numRows = Math.ceil(this.props.games.length / gamesPerRow);
     const curRow = Math.floor(this.state.selectedGame / gamesPerRow);
 
     if (curRow < numRows - 1) {
       selectedGame = Math.min(
-        this.state.numGames - 1,
+        this.props.games.length - 1,
         this.state.selectedGame + gamesPerRow,
       );
     } else {
       // on bottom row
       selectedGame =
         (this.state.selectedGame +
-          (this.state.numGames % gamesPerRow || gamesPerRow)) %
-        this.state.numGames;
+          (this.props.games.length % gamesPerRow || gamesPerRow)) %
+        this.props.games.length;
 
       // Instant scroll to new position
       this.scrollToOffset(this.getScrollOffset(selectedGame));
@@ -174,7 +183,7 @@ export class GameList extends React.PureComponent {
 
     if (this.state.selectedGame % gamesPerRow === 0) {
       selectedGame = Math.min(
-        this.state.numGames - 1,
+        this.props.games.length - 1,
         this.state.selectedGame + (gamesPerRow - 1),
       );
     } else {
@@ -193,13 +202,13 @@ export class GameList extends React.PureComponent {
 
     if ((this.state.selectedGame + 1) % gamesPerRow === 0) {
       selectedGame = this.state.selectedGame - (gamesPerRow - 1);
-    } else if (this.state.selectedGame === this.state.numGames - 1) {
-      const gamesOnLastRow = this.state.numGames % gamesPerRow;
+    } else if (this.state.selectedGame === this.props.games.length - 1) {
+      const gamesOnLastRow = this.props.games.length % gamesPerRow;
 
       selectedGame = this.state.selectedGame - gamesOnLastRow + 1;
     } else {
       selectedGame = Math.min(
-        this.state.numGames - 1,
+        this.props.games.length - 1,
         this.state.selectedGame + 1,
       );
     }
@@ -208,12 +217,12 @@ export class GameList extends React.PureComponent {
   };
 
   handleSelect = () => {
-    this.props.onSelectGame(this.state.games[this.state.selectedGame]);
+    this.props.onSelectGame(this.props.games[this.state.selectedGame]);
   };
 
   renderGame = ({ columnIndex, key, rowIndex, style, isScrolling }) => {
     const index = gamesPerRow * rowIndex + columnIndex;
-    const game = this.state.games[index];
+    const game = this.props.games[index];
 
     // console.log('renderGame()');
 
@@ -221,7 +230,7 @@ export class GameList extends React.PureComponent {
 
     return (
       <div key={key} style={style}>
-        <Game
+        <GameThumbnail
           selected={this.state.selectedGame === index}
           {...game}
           // image={`file:///home/rasse/roms/nes/images/${game.filename}.png`}
@@ -248,7 +257,7 @@ export class GameList extends React.PureComponent {
             cellRenderer={this.renderGame}
             columnCount={gamesPerRow}
             columnWidth={width / gamesPerRow}
-            rowCount={Math.ceil(this.state.games.length / gamesPerRow)}
+            rowCount={Math.ceil(this.props.games.length / gamesPerRow)}
             rowHeight={width / 5}
             overscanRowCount={1}
             selectedGame={this.state.selectedGame}
@@ -261,9 +270,9 @@ export class GameList extends React.PureComponent {
           />
         )}
       </AutoSizer>
-      {this.state.games[this.state.selectedGame] && (
+      {this.props.games[this.state.selectedGame] && (
         <FastScroll
-          games={this.state.games}
+          games={this.props.games}
           selectedGame={this.state.selectedGame}
           selectGame={this.selectGame}
         />

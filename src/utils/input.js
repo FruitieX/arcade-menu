@@ -1,27 +1,35 @@
+// @flow
+
 import EventEmitter from 'event-emitter';
-import Mousetrap from 'mousetrap';
+import cloneDeep from 'lodash/cloneDeep';
+import forEach from 'lodash/forEach';
 
 const gamepads = {};
 
 const inputEmitter = new EventEmitter();
 export default inputEmitter;
 
-const emitButton = (button, pressed) =>
-  inputEmitter.emit(button, { button, pressed });
+type ButtonEvent = {
+  button: string,
+  pressed: boolean,
+};
 
-const pollGamepad = gamepad => {
-  //console.log(gamepad.prevButtonState[0], gamepad.device.buttons[0]);
+const emitButton = (button, pressed) =>
+  inputEmitter.emit(button, ({ button, pressed }: ButtonEvent));
+
+const pollGamepad = (gamepad, gamepadId) => {
+  console.log(gamepads);
+  console.log(
+    gamepads[gamepadId].prevState.buttons[0].value,
+    gamepad.buttons[0].value,
+  );
 };
 
 const pollGamepads = () => {
-  const navigatorGamepads = navigator.getGamepads();
+  //forEach(navigator.getGamepads(), pollGamepad);
 
-  Object.keys(gamepads).forEach(gamepadId => {
-    pollGamepad({
-      ...gamepads[gamepadId],
-      device: navigatorGamepads[gamepadId],
-    });
-  });
+  //forEach(gamepads, gamepad => (gamepad.prevState = cloneDeep(gamepad)));
+
   window.requestAnimationFrame(pollGamepads);
 };
 
@@ -80,10 +88,8 @@ export const initInput = () => {
 
     if (connecting) {
       console.log(`Gamepad connected (id: ${gamepad.id})`);
-      console.log(gamepad);
       gamepads[gamepad.index] = {
-        prevButtonState: [...gamepad.buttons],
-        device: gamepad,
+        prevState: cloneDeep(gamepad),
       };
     } else {
       delete gamepads[gamepad.index];

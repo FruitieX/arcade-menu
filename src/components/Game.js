@@ -1,3 +1,5 @@
+// @flow
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -46,9 +48,26 @@ const Title = styled.div`
   color: #444;
 `;
 
-export default class Game extends React.PureComponent {
-  onMessage = e => {
-    const ctx = ReactDOM.findDOMNode(this.ref).getContext('2d');
+type Props = {
+  image: string,
+  selected: boolean,
+};
+
+type WorkerReply = {
+  data: {
+    imageBitmap: ImageBitmap,
+  },
+};
+
+export default class GameThumbnail extends React.PureComponent<Props> {
+  worker: SharedWorker;
+  ref: ?HTMLCanvasElement;
+
+  onMessage = (e: WorkerReply) => {
+    const domNode = ReactDOM.findDOMNode(this.ref);
+    if (!domNode) return;
+
+    const ctx = domNode.getContext('2d');
     ctx.drawImage(
       e.data.imageBitmap,
       0,
@@ -57,7 +76,7 @@ export default class Game extends React.PureComponent {
       ctx.canvas.height,
     );
   };
-  componentDidMount = async () => {
+  componentDidMount = () => {
     // Decode images in separate thread to avoid jank due to image decoding
     this.worker = new SharedWorker('/imageDecoder.js');
     this.worker.port.onmessage = this.onMessage;
